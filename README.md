@@ -140,18 +140,14 @@ Advantages:
 
 📁 Project Structure
 
-├── app.py
-
-├── requirements.txt
-
-├── README.md
+    ├── app.py
+    ├── requirements.txt
+    ├── README.md
 
 👤 Author
 
 **Aziz Ramdhani**
-
 *Industrial Engineering ⚙️ – President University 🎓*
-
 *Purchasing Staff Intern Project 💼🛒📦📊*
 
 **📄 License**
