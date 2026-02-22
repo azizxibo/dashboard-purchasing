@@ -1,64 +1,152 @@
-# Purchasing Dashboard – Streamlit Web App
+📊 Purchasing Dashboard – Streamlit Web Application
+📌 Overview
 
-## 📌 Overview
-This project is a **web-based purchasing dashboard** developed using **Streamlit**.  
-The dashboard is designed to support purchasing activities by visualizing operational data such as:
-- Purchase Requests
-- Petty Cash Usage
-- Cutting Stock Monitoring
+Purchasing Dashboard is a web-based monitoring system developed using Streamlit to support operational purchasing activities.
 
-The system aims to improve **data visibility, monitoring, and decision-making** in purchasing operations.
+The application integrates multiple purchasing-related modules into a single analytical interface, enabling structured monitoring, financial visibility, and decision support.
 
----
+This system transforms spreadsheet-based operational data into an interactive and visual decision-support dashboard.
 
-## 🚀 Live Dashboard
-🔗 **Access here:**  
+🚀 Live Application
+
+🔗 Access the Dashboard:
 https://dashboard-purchasing-auu9ea7ekaqdaokn3pnqnt.streamlit.app/
 
----
+🧩 Core Features
+💰 1. Petty Cash Monitoring
 
-## 📊 Data Source
-All data displayed in this dashboard is sourced from **Google Spreadsheet**, allowing:
-- Real-time data updates
-- Easy input and maintenance by users
-- No need to redeploy the application for data changes
+Cashflow tracking (IN / OUT)
 
-⚠️ *Note: Dashboard updates may experience a short delay due to caching mechanisms.*
+Automatic running balance calculation
 
----
+Date filtering and keyword search
 
-## 🛠️ Tech Stack
-- **Python**
-- **Streamlit**
-- **Pandas**
-- **Google Spreadsheet (as data source)**
-- **Streamlit Cloud (deployment)**
+Project / Person in Charge tracking
 
----
+PV status indicator (visual highlight)
 
-## 🔄 Update Mechanism
-- Data is automatically refreshed when the dashboard is reloaded
-- Caching is applied to improve performance and stability
-- Changes in the spreadsheet will be reflected after refresh or short delay
+KPI summary (Saldo, Total IN, Total OUT, Net)
 
----
+🛒 2. Purchase Request Monitoring
 
-## 🎯 Purpose
-This dashboard was developed as part of:
-- Internship / Final Internship Report
-- Academic project in Industrial Engineering
-- Practical implementation of data-driven purchasing systems
+Project-based filtering
 
----
+Search by item or description
 
-## 🧩 Use Case
-- Monitoring petty cash harian
-- Tracking purchase request per project
-- Early warning cutting stock (re-stock indicator)
-- Supporting purchasing reporting and control
+Total estimation calculation
 
----
-## 👤 Author
-**Aziz Ramdhani**  
+Distribution visualization per project (interactive pie chart)
+
+Summary table (Total Estimation & Number of Items)
+
+📦 3. Cutting Stock Monitoring
+
+Safety stock comparison
+
+Automatic system status:
+
+RE-STOCK
+
+AMAN
+
+Priority restock table
+
+Monitoring dashboard for inventory control
+
+🔐 4. Protected Entry Mode
+
+PIN-based access for internal data entry
+
+View-only mode for public users
+
+Structured form for petty cash input
+
+Designed for future expansion (PR & stock entry)
+
+📊 Data Architecture
+
+Data Source: Google Spreadsheet (Published CSV)
+
+Advantages:
+
+Real-time operational updates
+
+No database server required
+
+Easy maintenance by non-technical users
+
+Centralized data management
+
+The application uses:
+
+Column normalization
+
+Currency parsing for Indonesian Rupiah format
+
+Automatic numeric transformation
+
+Cached data loading for performance optimization
+
+🔄 Update Mechanism
+
+Data is loaded via @st.cache_data
+
+Manual refresh button available
+
+Automatic refresh on reload
+
+Short delay possible due to caching policy (TTL)
+
+🛠️ Tech Stack
+
+Python 3.10+
+
+Streamlit
+
+Pandas
+
+NumPy
+
+Plotly
+
+Google Spreadsheet (CSV endpoint)
+
+Streamlit Cloud (Deployment)
+
+🎯 System Objectives
+
+This dashboard was developed to:
+
+Improve transparency in purchasing operations
+
+Support financial monitoring of petty cash
+
+Enable project-based procurement analysis
+
+Provide early warning inventory control
+
+Implement data-driven operational monitoring
+
+The project demonstrates applied Industrial Engineering concepts in:
+
+Operational Control
+
+Inventory Management
+
+Data Visualization
+
+Decision Support Systems
+
+📁 Project Structure
+├── app.py
+├── requirements.txt
+├── README.md
+👤 Author
+
+Aziz Ramdhani
 Industrial Engineering – President University
 Purchasing Staff Intern Project
+
+📄 License
+
+This project is developed for academic and professional portfolio purposes.
