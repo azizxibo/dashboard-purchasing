@@ -1,4 +1,4 @@
-📊 Purchasing Dashboard – Streamlit Web Application
+**📊 Purchasing Dashboard – Streamlit Web Application**
 📌 Overview
 
 Purchasing Dashboard is a web-based monitoring system developed using Streamlit to support operational purchasing activities.
@@ -12,130 +12,131 @@ This system transforms spreadsheet-based operational data into an interactive an
 🔗 Access the Dashboard:
 https://dashboard-purchasing-auu9ea7ekaqdaokn3pnqnt.streamlit.app/
 
-🧩 Core Features
-💰 1. Petty Cash Monitoring
+**🧩 Core Features**
 
-Cashflow tracking (IN / OUT)
+**💰 1. Petty Cash Monitoring**
 
-Automatic running balance calculation
+- Cashflow tracking (IN / OUT)
 
-Date filtering and keyword search
+- Automatic running balance calculation
 
-Project / Person in Charge tracking
+- Date filtering and keyword search
 
-PV status indicator (visual highlight)
+- Project / Person in Charge tracking
 
-KPI summary (Saldo, Total IN, Total OUT, Net)
+- PV status indicator (visual highlight)
 
-🛒 2. Purchase Request Monitoring
+- KPI summary (Saldo, Total IN, Total OUT, Net)
 
-Project-based filtering
+**🛒 2. Purchase Request Monitoring**
 
-Search by item or description
+- Project-based filtering
 
-Total estimation calculation
+- Search by item or description
 
-Distribution visualization per project (interactive pie chart)
+- Total estimation calculation
 
-Summary table (Total Estimation & Number of Items)
+- Distribution visualization per project (interactive pie chart)
 
-📦 3. Cutting Stock Monitoring
+- Summary table (Total Estimation & Number of Items)
 
-Safety stock comparison
+**📦 3. Cutting Stock Monitoring**
 
-Automatic system status:
+- Safety stock comparison
 
-RE-STOCK
+- Automatic system status:
 
-AMAN
+    - RE-STOCK
 
-Priority restock table
+    - AMAN
 
-Monitoring dashboard for inventory control
+- Priority restock table
 
-🔐 4. Protected Entry Mode
+- Monitoring dashboard for inventory control
 
-PIN-based access for internal data entry
+**🔐 4. Protected Entry Mode**
 
-View-only mode for public users
+- PIN-based access for internal data entry
 
-Structured form for petty cash input
+- View-only mode for public users
 
-Designed for future expansion (PR & stock entry)
+- Structured form for petty cash input
 
-📊 Data Architecture
+- Designed for future expansion (PR & stock entry)
 
-Data Source: Google Spreadsheet (Published CSV)
+**📊 Data Architecture**
+
+- Data Source: Google Spreadsheet (Published CSV)
 
 Advantages:
 
-Real-time operational updates
+- Real-time operational updates
 
-No database server required
+- No database server required
 
-Easy maintenance by non-technical users
+- Easy maintenance by non-technical users
 
-Centralized data management
+- Centralized data management
 
-The application uses:
+- The application uses:
 
-Column normalization
+- Column normalization
 
-Currency parsing for Indonesian Rupiah format
+- Currency parsing for Indonesian Rupiah format
 
-Automatic numeric transformation
+- Automatic numeric transformation
 
-Cached data loading for performance optimization
+- Cached data loading for performance optimization
 
-🔄 Update Mechanism
+**🔄 Update Mechanism**
 
-Data is loaded via @st.cache_data
+- Data is loaded via @st.cache_data
 
-Manual refresh button available
+- Manual refresh button available
 
-Automatic refresh on reload
+- Automatic refresh on reload
 
-Short delay possible due to caching policy (TTL)
+- Short delay possible due to caching policy (TTL)
 
-🛠️ Tech Stack
+**🛠️ Tech Stack**
 
-Python 3.10+
+- Python 3.10+
 
-Streamlit
+- Streamlit
 
-Pandas
+- Pandas
 
-NumPy
+- NumPy
 
-Plotly
+- Plotly
 
-Google Spreadsheet (CSV endpoint)
+- Google Spreadsheet (CSV endpoint)
 
-Streamlit Cloud (Deployment)
+- Streamlit Cloud (Deployment)
 
-🎯 System Objectives
+**🎯 System Objectives**
 
-This dashboard was developed to:
+- This dashboard was developed to:
 
-Improve transparency in purchasing operations
+- Improve transparency in purchasing operations
 
-Support financial monitoring of petty cash
+- Support financial monitoring of petty cash
 
-Enable project-based procurement analysis
+- Enable project-based procurement analysis
 
-Provide early warning inventory control
+- Provide early warning inventory control
 
-Implement data-driven operational monitoring
+- Implement data-driven operational monitoring
 
-The project demonstrates applied Industrial Engineering concepts in:
+- The project demonstrates applied Industrial Engineering concepts in:
 
-Operational Control
+- Operational Control
 
-Inventory Management
+- Inventory Management
 
-Data Visualization
+- Data Visualization
 
-Decision Support Systems
+- Decision Support Systems
 
 📁 Project Structure
 ├── app.py
@@ -143,10 +144,10 @@ Decision Support Systems
 ├── README.md
 👤 Author
 
-Aziz Ramdhani
-Industrial Engineering – President University
-Purchasing Staff Intern Project
+**Aziz Ramdhani**
+*Industrial Engineering – President University*
+*Purchasing Staff Intern Project*
 
-📄 License
+**📄 License**
 
 This project is developed for academic and professional portfolio purposes.
