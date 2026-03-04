@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.express as px
 
 # =========================
 # CUSTOM KPI CARD
@@ -14,7 +15,29 @@ def kpi_card(title, value):
         </div>
         """,
         unsafe_allow_html=True
-    )
+        )
+    st.markdown("""
+    <style>
+    .kpi-card {
+        background: #111827;
+        border: 1px solid #2e2e2e;
+        border-radius: 14px;
+        padding: 18px;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+    }
+    .kpi-title {
+        font-size: 13px;
+        color: #9ca3af;
+        margin-bottom: 6px;
+    }
+    .kpi-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #f9fafb;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # =========================
 # RUPIAH PARSER (ROBUST)
@@ -88,23 +111,27 @@ st.title("📊 Dashboard Purchasing & Inventory")
 st.caption("Monitoring Petty Cash, Purchase Request, dan Cutting Stock")
 st.markdown("""
 <style>
-.kpi-card {
-    background: #111827;
-    border: 1px solid #2e2e2e;
-    border-radius: 14px;
-    padding: 18px;
+.kpi-card-red {
+    background: linear-gradient(135deg, #2a0f14, #3a141b);
+    padding: 25px;
+    border-radius: 18px;
     text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+}
+.kpi-card-green {
+    background: linear-gradient(135deg, #0f2a18, #144022);
+    padding: 25px;
+    border-radius: 18px;
+    text-align: center;
 }
 .kpi-title {
-    font-size: 13px;
-    color: #9ca3af;
-    margin-bottom: 6px;
+    font-size: 14px;
+    color: #9fb3c8;
+    margin-bottom: 10px;
 }
 .kpi-value {
-    font-size: 22px;
-    font-weight: 700;
-    color: #f9fafb;
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -113,7 +140,7 @@ st.markdown("""
 # SIDEBAR - ENTRY ACCESS
 # =========================
 with st.sidebar:
-    st.subheader("🔐 Entry Access")
+    st.subheader("🔐 Staff Access")
 
     pin_input = st.text_input(
         "Masukkan PIN",
@@ -121,17 +148,17 @@ with st.sidebar:
         key="pin_input"
     )
 
-    if st.button("Akses Entry"):
+    if st.button("Akses Staff"):
         if pin_input == "1234":   # PIN_BENAR = "1234" misalnya
             st.session_state.auth_ok = True
-            st.success("Akses entry aktif")
+            st.success("Akses Staff aktif")
         else:
             st.session_state.auth_ok = False
             st.error("PIN salah")
 
     # info status (opsional tapi rapi)
     if st.session_state.get("auth_ok"):
-        st.caption("🟢 Mode Entry Aktif")
+        st.caption("🟢 Mode Staff Aktif")
     else:
         st.caption("🔒 Mode View Only")
 
@@ -150,23 +177,26 @@ def load_data():
     url_petty = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQiqe-WvAEHeE8Uly6uuJ8OYDx3nzNXeVL7dpfkEt5QWkvK3rBqhTC4XdVNicBYBhqINsd9NL1r0IdZ/pub?gid=597462353&single=true&output=csv"
     url_pr    = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQiqe-WvAEHeE8Uly6uuJ8OYDx3nzNXeVL7dpfkEt5QWkvK3rBqhTC4XdVNicBYBhqINsd9NL1r0IdZ/pub?gid=1286954685&single=true&output=csv"
     url_stock = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQiqe-WvAEHeE8Uly6uuJ8OYDx3nzNXeVL7dpfkEt5QWkvK3rBqhTC4XdVNicBYBhqINsd9NL1r0IdZ/pub?gid=180967511&single=true&output=csv"
+    url_tracking = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQiqe-WvAEHeE8Uly6uuJ8OYDx3nzNXeVL7dpfkEt5QWkvK3rBqhTC4XdVNicBYBhqINsd9NL1r0IdZ/pub?gid=456535989&single=true&output=csv"
 
     petty_cash = pd.read_csv(url_petty, sep=",", encoding="utf-8", engine="python")
     purchase_request = pd.read_csv(url_pr, sep=",", encoding="utf-8", engine="python")
     cutting_stock = pd.read_csv(url_stock, sep=",", encoding="utf-8", engine="python")
+    tracking_data = pd.read_csv(url_tracking, sep=",", encoding="utf-8", engine="python")
 
     petty_cash = clean_cols(petty_cash)
     purchase_request = clean_cols(purchase_request)
     cutting_stock = clean_cols(cutting_stock)
+    tracking_data = clean_cols(tracking_data)
 
-    return petty_cash, purchase_request, cutting_stock
+    return petty_cash, purchase_request, cutting_stock, tracking_data
 
-petty_cash, pr_data, stock_data = load_data()
+petty_cash, pr_data, stock_data, tracking_data = load_data()
 
 # =========================
 # NAVIGATION: TABS
 # =========================
-tab_labels = ["Petty Cash", "Purchase Request", "Cutting Stock", "Entry Data"]
+tab_labels = ["💰 Petty Cash", "🛒 Purchase Request", "📦 Cutting Stock", "🔎 Tracking Harga & Supplier", "📊 Analysis"]
 st.caption(f"Total opsi menu: {len(tab_labels)}")
 tabs = st.tabs(tab_labels)
 
@@ -249,19 +279,19 @@ with tabs[0]:
     k1, k2, k3, k4, k5 = st.columns([1.2, 1, 1, 1, 1])
 
     with k1:
-        kpi_card("Saldo Akhir (seluruh data)", format_rp(saldo_akhir_all))
+        kpi_card("💳 Sisa Saldo Akhir", format_rp(saldo_akhir_all))
 
     with k2:
-        kpi_card("Total IN (filter)", format_rp(total_in))
+        kpi_card("💰 Total IN", format_rp(total_in))
 
     with k3:
-        kpi_card("Total OUT (filter)", format_rp(total_out))
+        kpi_card("💸 Total OUT", format_rp(total_out))
 
     with k4:
-        kpi_card("Net (filter)", format_rp(net_range))
+        kpi_card("⚖️ Balace", format_rp(net_range))
 
     with k5:
-        kpi_card("Total Transaksi", total_transaksi)
+        kpi_card("🛍️ Total Transaksi", total_transaksi)
 
     # =========================
     # TABEL UTAMA (RUPIAH)
@@ -351,9 +381,23 @@ with tabs[0]:
         total_estimation = int(df_pr["SUBTOTAL_NUM"].sum())
         total_item = len(df_pr)
 
-        k1, k2 = st.columns(2)
-        k1.metric("Total Estimasi Pembelian", format_rp(total_estimation))
-        k2.metric("Total Item Request", total_item)
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-title">Total Estimasi Pembelian</div>
+                <div class="kpi-value">{format_rp(total_estimation)}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with col2:
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-title">Total Item Request</div>
+                <div class="kpi-value">{total_item}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
         # =========================
         # DISTRIBUSI & RINGKASAN ESTIMASI PER PROJECT
@@ -425,104 +469,328 @@ with tabs[0]:
 with tabs[2]:
     st.header("📦 Cutting Stock Monitoring")
 
-    for col in ["QTY", "SAFETY STOCK"]:
-        if col in stock_data.columns:
-            stock_data[col] = pd.to_numeric(stock_data[col], errors="coerce").fillna(0)
+    # Pakai copy supaya tidak merusak data asli
+    df_stock = stock_data.copy()
 
-    if "QTY" in stock_data.columns and "SAFETY STOCK" in stock_data.columns:
-        stock_data["SYSTEM STATUS"] = stock_data.apply(
+    # Pastikan numeric
+    for col in ["QTY", "SAFETY STOCK"]:
+        if col in df_stock.columns:
+            df_stock[col] = pd.to_numeric(df_stock[col], errors="coerce").fillna(0)
+
+    if "QTY" in df_stock.columns and "SAFETY STOCK" in df_stock.columns:
+
+        # Buat status sistem
+        df_stock["SYSTEM STATUS"] = df_stock.apply(
             lambda r: "RE-STOCK" if r["QTY"] <= r["SAFETY STOCK"] else "AMAN",
             axis=1
         )
 
-        restock_count = int((stock_data["SYSTEM STATUS"] == "RE-STOCK").sum())
-        aman_count = int((stock_data["SYSTEM STATUS"] == "AMAN").sum())
+        restock_count = int((df_stock["SYSTEM STATUS"] == "RE-STOCK").sum())
+        aman_count = int((df_stock["SYSTEM STATUS"] == "AMAN").sum())
 
-        c1, c2 = st.columns(2)
-        c1.metric("Item Perlu Re-Stock", restock_count)
-        c2.metric("Item Aman", aman_count)
-
-        st.subheader("Prioritas Re-Stock")
-        st.dataframe(
-            stock_data[stock_data["SYSTEM STATUS"] == "RE-STOCK"].sort_values("QTY"),
-            width="stretch"
-        )
-
-    st.subheader("Data Stok Lengkap")
-    st.dataframe(stock_data, width="stretch")
-
-# ==========================================================
-# TAB 4: ENTRY DATA (PLACEHOLDER)
-# ==========================================================
-with tabs[3]:
-    st.header("📝 Entry Data (Internal Use)")
-
-    if not st.session_state.get("auth_ok", False):
-        st.warning("🔒 Akses dibatasi. Masukkan PIN untuk membuka menu entry.")
-        st.stop()
-
-    st.info(
-        "Menu ini akan digunakan untuk:\n"
-        "- Input Petty Cash\n"
-        "- Input Purchase Request\n"
-        "- Update Cutting Stock\n\n"
-        "Form akan ditambahkan pada tahap berikutnya."
-    )
-
-# ==========================================================
-# FORM PETTY CASH (ENTRY DATA)
-# ==========================================================
-    st.subheader("💰 Form Input Petty Cash")
-
-    with st.form("form_petty_cash", clear_on_submit=True):
-
+        # =========================
+        # KPI CARD STYLE
+        # =========================
         col1, col2 = st.columns(2)
 
         with col1:
-            date = st.date_input("Tanggal")
-
-            project_select = st.selectbox(
-                "Project (jika ada)",
-                ["", "Project SPK.073/25", "Project SPK.074/25", "Project SPK.075/25"]
-            )
-            project_text = st.text_input("Project manual (opsional)")
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-title">Item Perlu Re-Stock</div>
+                <div class="kpi-value">{restock_count}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
         with col2:
-            pj_select = st.selectbox(
-                "PJ (jika ada)",
-                ["", "Aziz"]
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-title">Item Aman</div>
+                <div class="kpi-value">{aman_count}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # =========================
+        # PRIORITAS RESTOCK
+        # =========================
+        st.subheader("Prioritas Re-Stock")
+
+        df_restock = df_stock[df_stock["SYSTEM STATUS"] == "RE-STOCK"]
+
+        if not df_restock.empty:
+            st.dataframe(
+                df_restock.sort_values("QTY"),
+                use_container_width=True
             )
-            pj_text = st.text_input("PJ manual (opsional)")
+        else:
+            st.info("Semua stok dalam kondisi aman.")
 
-        keterangan = st.text_input("Keterangan Singkat")
-        deskripsi = st.text_area("Deskripsi Transaksi")
+    # =========================
+    # DATA LENGKAP
+    # =========================
+    st.subheader("Data Stok Lengkap")
+    st.dataframe(df_stock, use_container_width=True)
 
-        tipe = st.radio("Tipe Transaksi", ["IN", "OUT"], horizontal=True)
-        jumlah = st.number_input("Jumlah (Rp)", min_value=0, step=1000)
+# ==========================================================
+# TAB 4: TRACKING PRICE
+# ==========================================================
+with tabs[3]:
+    st.header("🔎 Tracking Harga & Supplier")
 
-        submitted = st.form_submit_button("💾 Simpan Data")
+    if not st.session_state.get("auth_ok", False):
+        st.warning("🔒 Akses dibatasi. Masukkan PIN di sidebar untuk membuka menu tracking & Analysis.")
+        st.stop()
 
-        if submitted:
+    df_track = tracking_data.copy()
 
-            project_final = project_text if project_text else project_select
-            pj_final = pj_text if pj_text else pj_select
+    required_cols = ["DESCRIPTION", "PROJECT", "UNIT", "HARGA", "SUPPLIER"]
+    missing = [c for c in required_cols if c not in df_track.columns]
 
-            project_pj = project_final if project_final else pj_final
+    if missing:
+        st.error(f"Kolom wajib hilang: {missing}")
+        st.stop()
 
-            if not project_pj:
-                st.warning("⚠️ Project atau PJ wajib diisi.")
-            elif jumlah == 0:
-                st.warning("⚠️ Jumlah tidak boleh 0.")
-            else:
-                new_row = {
-                    "DATE": date,
-                    "KETERANGAN": keterangan,
-                    "TIPE": tipe,
-                    "JUMLAH": jumlah,
-                    "DESKRIPSI": deskripsi,
-                    "PROJECT/PJ": project_pj,
-                    "KET.PV": "Belum PV"
-                }
+    # pastikan harga numerik
+    df_track["HARGA_NUM"] = parse_rupiah(df_track["HARGA"]).astype("int64")
 
-                st.success("✅ Data valid & siap disimpan")
-                st.json(new_row)
+    search_item = st.text_input("Cari Nama Barang")
+
+    if search_item.strip():
+        df_filtered = df_track[
+            df_track["DESCRIPTION"]
+            .astype(str)
+            .str.upper()
+            .str.contains(search_item.upper(), na=False)
+        ]
+
+        if df_filtered.empty:
+            st.warning("Data tidak ditemukan")
+        else:
+            st.subheader("Hasil Pencarian")
+            view_track = df_filtered.copy()
+            view_track["HARGA"] = view_track["HARGA_NUM"].apply(format_rp)
+
+            st.dataframe(
+                view_track[["DESCRIPTION","UNIT","PROJECT","SUPPLIER","HARGA"]],
+                use_container_width=True
+            )
+
+            # SUMMARY ANALYTICS
+            min_price = df_filtered["HARGA_NUM"].min()
+            max_price = df_filtered["HARGA_NUM"].max()
+            avg_price = int(df_filtered["HARGA_NUM"].mean())
+
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Harga Terendah", format_rp(min_price))
+            col2.metric("Harga Tertinggi", format_rp(max_price))
+            col3.metric("Rata-rata Harga", format_rp(avg_price))
+
+            # Supplier paling sering
+            top_supplier = df_filtered["SUPPLIER"].value_counts().idxmax()
+            st.info(f"Supplier paling sering digunakan: {top_supplier}")
+            st.caption("🏷️ Harga berdasarkan histori purchase request dan dapat berubah sewaktu-waktu sesuai kebijakan supplier.")     
+
+# ==========================================================
+# TAB 5: ANALYSIS
+# ==========================================================
+with tabs[4]:
+    st.header("📊 Cashflow Analysis")
+
+    df_cash = petty_cash.copy()
+
+    if df_cash.empty:
+        st.error("Data Cashflow kosong.")
+        st.stop()
+
+        # =========================
+        # Validasi Kolom
+        # =========================
+    required_cols = ["JUMLAH", "TIPE", "DATE"]
+    missing = [c for c in required_cols if c not in df_cash.columns]
+
+    if missing:
+        st.error(f"Kolom tidak ditemukan: {missing}")
+        st.stop()
+
+        # =========================
+        # Cleaning Data (ANTI BEDA ANGKA)
+        # =========================
+    df_cash["TIPE"] = df_cash["TIPE"].astype(str).str.upper().str.strip()
+    df_cash["JUMLAH_NUM"] = parse_rupiah(df_cash["JUMLAH"]).astype("int64")
+    df_cash["DATE"] = pd.to_datetime(df_cash["DATE"], errors="coerce")
+
+        # =========================
+        # KPI
+        # =========================
+    total_in = df_cash.loc[df_cash["TIPE"] == "IN", "JUMLAH_NUM"].sum()
+    total_out = df_cash.loc[df_cash["TIPE"] == "OUT", "JUMLAH_NUM"].sum()
+    net_total = total_in - total_out
+
+    ratio = (total_in / total_out) if total_out > 0 else 0
+    ratio_percent = ratio * 100
+
+        # Persentase pengeluaran terhadap pemasukan
+    out_percent = (total_out / total_in * 100) if total_in > 0 else 0
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+            kpi_card("💰 Total IN", format_rp(total_in))
+
+    with col2:
+            kpi_card("💸 Total OUT", format_rp(total_out))
+            delta=f"{out_percent:.1f}% dari IN"
+
+    with col3:
+            kpi_card("📊 Net Cashflow", format_rp(net_total))
+            delta=format_rp(net_total),
+            delta_color="normal" if net_total >= 0 else "inverse"
+
+    with col4:
+            kpi_card("⚖️ Rasio IN / OUT", f"{ratio:.2f}x")
+            delta=f"{ratio_percent:.0f}%"
+            
+        # Status kesehatan
+    if net_total > 0:
+        st.success("🟢 Cashflow Sehat (Surplus)")
+    elif net_total < 0:
+        st.error("🔴 Cashflow Defisit")
+    else:
+        st.warning("🟡 Break Even")
+
+        # =========================
+        # Project Paling Boros
+        # =========================
+    if "PROJECT/PJ" in df_cash.columns:
+        st.subheader("📊 Kontributor Pengeluaran Terbesar")
+
+        df_out = df_cash[df_cash["TIPE"] == "OUT"]
+
+        project_spending = (
+            df_out.groupby("PROJECT/PJ")["JUMLAH_NUM"]
+            .sum()
+            .reset_index()
+            .sort_values("JUMLAH_NUM", ascending=False)
+            )
+
+        project_spending["TOTAL"] = project_spending["JUMLAH_NUM"].apply(format_rp)
+
+        st.dataframe(
+            project_spending[["PROJECT/PJ", "TOTAL"]],
+            use_container_width=True
+            )
+
+            # Ambil Top 5
+        top_projects = project_spending.head(5).copy()
+
+            # Tambah kolom ranking untuk warna
+        top_projects["RANK"] = range(1, len(top_projects) + 1)
+
+            # Warna khusus top 1
+        top_projects["COLOR"] = top_projects["RANK"].apply(
+            lambda x: "Top 1" if x == 1 else "Others"
+            )
+
+        fig = px.bar(
+                top_projects,
+                x="JUMLAH_NUM",
+                y="PROJECT/PJ",
+                orientation="h",
+                color="COLOR",
+                color_discrete_map={
+                    "Top 1": "#ff4b4b",
+                    "Others": "#1f77b4"
+                },
+                text="JUMLAH_NUM"
+            )
+
+        fig.update_layout(
+                yaxis=dict(categoryorder="total ascending"),
+                xaxis_title="Total Pengeluaran",
+                yaxis_title="Project / PIC",
+                showlegend=False,
+                height=400
+            )
+
+        fig.update_traces(
+                texttemplate='%{text:,}',
+                textposition='outside'
+            )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+            # Insight otomatis
+        top_name = top_projects.iloc[0]["PROJECT/PJ"]
+        top_value = top_projects.iloc[0]["JUMLAH_NUM"]
+        total_spending = df_out["JUMLAH_NUM"].sum()
+
+        percentage = (top_value / total_spending) * 100
+
+        st.info(
+            f"""
+            📌 **Insight:**
+                
+            Pengeluaran terbesar berasal dari **{top_name}** 
+            dengan total sebesar **{format_rp(top_value)}**, 
+            berkontribusi sekitar **{percentage:.1f}%** 
+            dari total pengeluaran keseluruhan.
+            """
+            )
+
+        # =========================
+        # Analisis Bulanan
+        # =========================
+
+        df_cash["MONTH"] = df_cash["DATE"].dt.to_period("M")
+
+        monthly = (
+            df_cash.groupby(["MONTH", "TIPE"])["JUMLAH_NUM"]
+            .sum()
+            .unstack(fill_value=0)
+            .reset_index()
+            .sort_values("MONTH")
+        )
+
+        monthly["NET"] = monthly.get("IN", 0) - monthly.get("OUT", 0)
+
+        monthly["MONTH"] = monthly["MONTH"].astype(str)
+
+        # =========================
+        # Tabel Growth
+        # =========================
+        st.subheader("📊 Detail Cashflow Bulanan")
+
+        display_monthly = monthly.copy()
+        display_monthly["NET"] = display_monthly["NET"].apply(format_rp)
+        display_monthly["IN"] = display_monthly.get("IN", 0).apply(format_rp)
+        display_monthly["OUT"] = display_monthly.get("OUT", 0).apply(format_rp)
+
+        st.dataframe(
+            display_monthly[["MONTH", "IN", "OUT", "NET",]],
+            use_container_width=True
+        )
+
+        # =========================
+        # Insight Otomatis
+        # =========================
+
+        # Pastikan pakai data numeric (monthly, bukan display_monthly)
+        total_in = monthly.get("IN", 0).sum()
+        total_out = monthly.get("OUT", 0).sum()
+        total_net = monthly["NET"].sum()
+
+        avg_net = monthly["NET"].mean()
+
+        best_month = monthly.loc[monthly["NET"].idxmax()]
+        worst_month = monthly.loc[monthly["NET"].idxmin()]
+
+        st.markdown("### 📌 Insight Bulanan")
+
+        st.markdown(f"""
+        - Total pemasukan periode ini: **{format_rp(total_in)}**
+        - Total pengeluaran periode ini: **{format_rp(total_out)}**
+        - Total net cashflow: **{format_rp(total_net)}**
+        - Rata-rata net per bulan: **{format_rp(avg_net)}**
+
+        📈 Bulan terbaik: **{best_month['MONTH']}** dengan net **{format_rp(best_month['NET'])}**  
+        📉 Bulan terendah: **{worst_month['MONTH']}** dengan net **{format_rp(worst_month['NET'])}**
+        """)
