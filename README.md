@@ -6,11 +6,11 @@ Purchasing Dashboard is a web-based operational monitoring system developed usin
 
 This application transforms spreadsheet-based operational data into an interactive analytical dashboard, enabling:
 
-Structured financial monitoring
-Real-time purchasing visibility
-Inventory status control
-Project-based spending analysis
-Data-driven decision support
+    - Structured financial monitoring
+    - Real-time purchasing visibility
+    - Inventory status control
+    - Project-based spending analysis
+    - Data-driven decision support
 
 The system integrates multiple operational modules into a single interface to improve transparency and efficiency within purchasing activities.
 
@@ -37,23 +37,23 @@ https://dashboard-purchasing-auu9ea7ekaqdaokn3pnqnt.streamlit.app/
 
 - KPI summary:
 
-- Saldo Akhir
+    - Saldo Akhir
 
-- Total IN
+    - Total IN
 
-- Total OUT
+    - Total OUT
 
-- Net Cashflow
+    - Net Cashflow
 
-- Total Transactions
+    - Total Transactions
 
 - Monthly cashflow breakdown:
 
-    IN
+    - IN
 
-    OUT
+    - OUT
 
-    NET
+    - NET
 
 - Automatic monthly insight generation
 
@@ -73,9 +73,9 @@ https://dashboard-purchasing-auu9ea7ekaqdaokn3pnqnt.streamlit.app/
 
 - Summary table:
 
-- Total Estimation per Project
+    - Total Estimation per Project
 
-- Number of Items per Project
+    - Number of Items per Project
 
 **📦 3. Cutting Stock Monitoring**
 
@@ -83,9 +83,9 @@ https://dashboard-purchasing-auu9ea7ekaqdaokn3pnqnt.streamlit.app/
 
 - Automatic system status classification:
 
-    RE-STOCK
+    - RE-STOCK
 
-    AMAN
+    - AMAN
 
 - Priority restock table
 
@@ -101,11 +101,11 @@ https://dashboard-purchasing-auu9ea7ekaqdaokn3pnqnt.streamlit.app/
 
 - Historical price analytics:
 
-- Lowest price
+    - Lowest price
 
-- Highest price
+    - Highest price
 
-- Average price
+    - Average price
 
 - Most frequently used supplier identification
 
@@ -121,11 +121,11 @@ https://dashboard-purchasing-auu9ea7ekaqdaokn3pnqnt.streamlit.app/
 
 - Designed for future expansion:
 
-- Purchase entry form
+    - Purchase entry form
 
-- Stock entry
+    - Stock entry
 
-- Internal operational management
+    - Internal operational management
 
 **📊 Data Architecture**
 
@@ -141,13 +141,19 @@ Advantages:
 
 - Centralized data management
 
-- The application uses:
+- Lightweight deployment architecture
+
+Data Processing Includes:
 
 - Column normalization
 
-- Currency parsing for Indonesian Rupiah format
+- Robust Indonesian Rupiah parsing
 
 - Automatic numeric transformation
+
+- Running balance computation
+
+- Monthly aggregation
 
 - Cached data loading for performance optimization
 
