@@ -1,13 +1,20 @@
 **📊 Purchasing Dashboard – Streamlit Web Application**
-📌 Overview
 
-Purchasing Dashboard is a web-based monitoring system developed using Streamlit to support operational purchasing activities.
+**📌 Overview**
 
-The application integrates multiple purchasing-related modules into a single analytical interface, enabling structured monitoring, financial visibility, and decision support.
+Purchasing Dashboard is a web-based operational monitoring system developed using Streamlit to support purchasing, petty cash management, and inventory control activities.
 
-This system transforms spreadsheet-based operational data into an interactive and visual decision-support dashboard.
+This application transforms spreadsheet-based operational data into an interactive analytical dashboard, enabling:
 
-🚀 Live Application
+Structured financial monitoring
+Real-time purchasing visibility
+Inventory status control
+Project-based spending analysis
+Data-driven decision support
+
+The system integrates multiple operational modules into a single interface to improve transparency and efficiency within purchasing activities.
+
+**🚀 Live Application**
 
 🔗 Access the Dashboard:
 https://dashboard-purchasing-auu9ea7ekaqdaokn3pnqnt.streamlit.app/
@@ -16,53 +23,109 @@ https://dashboard-purchasing-auu9ea7ekaqdaokn3pnqnt.streamlit.app/
 
 **💰 1. Petty Cash Monitoring**
 
-- Cashflow tracking (IN / OUT)
+- IN / OUT cashflow tracking
 
 - Automatic running balance calculation
 
-- Date filtering and keyword search
+- Date range filtering
+
+- Keyword search (description / project / PIC)
 
 - Project / Person in Charge tracking
 
-- PV status indicator (visual highlight)
+- PV (Payment Voucher) status indicator with visual highlighting
 
-- KPI summary (Saldo, Total IN, Total OUT, Net)
+- KPI summary:
+
+- Saldo Akhir
+
+- Total IN
+
+- Total OUT
+
+- Net Cashflow
+
+- Total Transactions
+
+- Monthly cashflow breakdown:
+
+    IN
+
+    OUT
+
+    NET
+
+- Automatic monthly insight generation
+
+- Top spending project visualization (Horizontal Bar Chart with Top 1 highlight)
 
 **🛒 2. Purchase Request Monitoring**
 
 - Project-based filtering
 
-- Search by item or description
+- Item / description search
+
+- Automatic subtotal parsing (Indonesian Rupiah format)
 
 - Total estimation calculation
 
-- Distribution visualization per project (interactive pie chart)
+- Interactive project distribution visualization (Donut Chart – Plotly)
 
-- Summary table (Total Estimation & Number of Items)
+- Summary table:
+
+- Total Estimation per Project
+
+- Number of Items per Project
 
 **📦 3. Cutting Stock Monitoring**
 
-- Safety stock comparison
+- Quantity vs Safety Stock comparison
 
-- Automatic system status:
+- Automatic system status classification:
 
-    - RE-STOCK
+    RE-STOCK
 
-    - AMAN
+    AMAN
 
 - Priority restock table
 
-- Monitoring dashboard for inventory control
+- Inventory monitoring dashboard
 
-**🔐 4. Protected Entry Mode**
+- Early warning for stock shortage
 
-- PIN-based access for internal data entry
+**🔎 4. Price & Supplier Tracking (Protected Mode)**
 
-- View-only mode for public users
+- Item-based price search
 
-- Structured form for petty cash input
+- Supplier comparison
 
-- Designed for future expansion (PR & stock entry)
+- Historical price analytics:
+
+- Lowest price
+
+- Highest price
+
+- Average price
+
+- Most frequently used supplier identification
+
+- Restricted access via PIN authentication
+
+**🔐 Access Control System**
+
+- PIN-based authentication system
+
+- Public users → View-only mode
+
+- Staff mode → Internal tracking & analysis access
+
+- Designed for future expansion:
+
+- Purchase entry form
+
+- Stock entry
+
+- Internal operational management
 
 **📊 Data Architecture**
 
@@ -120,23 +183,29 @@ Advantages:
 
 - Improve transparency in purchasing operations
 
-- Support financial monitoring of petty cash
+- Monitor petty cash financial flow
 
-- Enable project-based procurement analysis
+- Analyze procurement spending per project
 
-- Provide early warning inventory control
+- Provide inventory early warning control
 
-- Implement data-driven operational monitoring
+- Implement structured data-driven operational monitoring
 
-- The project demonstrates applied Industrial Engineering concepts in:
+**📘 Applied Industrial Engineering Concepts**
+
+- This project demonstrates practical implementation of:
 
 - Operational Control
 
 - Inventory Management
 
+- Cashflow Monitoring
+
 - Data Visualization
 
 - Decision Support Systems
+
+- Applied Analytics in Operational Environment
 
 📁 Project Structure
 
