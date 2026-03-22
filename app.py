@@ -193,12 +193,55 @@ def load_data():
 
 petty_cash, pr_data, stock_data, tracking_data = load_data()
 
+
 # =========================
 # NAVIGATION: TABS
 # =========================
 tab_labels = ["💰 Petty Cash", "🛒 Purchase Request", "📦 Cutting Stock", "🔎 Tracking Harga & Supplier", "📊 Analysis"]
 st.caption(f"Total opsi menu: {len(tab_labels)}")
 tabs = st.tabs(tab_labels)
+
+# =========================
+# HELPER FUNCTIONS
+# =========================
+
+def pill_style(val, col):
+    v = str(val).upper().strip()
+
+    base = (
+        "border-radius: 12px;"
+        "padding: 4px 10px;"
+        "text-align: center;"
+        "display: inline-block;"
+        "font-weight: 600;"
+    )
+
+    # TIPE
+    if col == "TIPE":
+        if v == "IN":
+            return base + "background-color:#C8F7C5; color:#000;"
+        if v == "OUT":
+            return base + "background-color:#F8C6C6; color:#000;"
+
+    # KETERANGAN
+    if col == "KETERANGAN":
+        if "PEMBELIAN" in v:
+            return base + "background-color:#DFF5E1; color:#1B5E20;"
+        if "PEMBAYARAN" in v:
+            return base + "background-color:#E8F5E9; color:#1B5E20;"
+        if "MASUK" in v:
+            return base + "background-color:#FFF3CD; color:#856404;"
+        if "DANA" in v:
+            return base + "background-color:#D6EAF8; color:#154360;"
+
+    # PV
+    if col == "KET.PV":
+        if "BELUM" in v:
+            return base + "background-color:#F8C6C6; color:#000;"
+        if "SUDAH" in v:
+            return base + "background-color:#C8F7C5; color:#000;"
+
+    return ""
 
 # ==========================================================
 # TAB 1: PETTY CASH (FOCUS CASHFLOW, TANPA PV)
@@ -223,8 +266,14 @@ with tabs[0]:
         np.where(petty_cash["TIPE"].eq("OUT"), -petty_cash["JUMLAH_NUM"], 0)
     ).astype("int64")
 
-    petty_cash = petty_cash.sort_values("DATE")
+    petty_cash = petty_cash.reset_index(drop=True)
+    petty_cash["ROW_ID"] = petty_cash.index
+
     petty_cash["SALDO_NUM"] = petty_cash["JUMLAH_BERSIH"].cumsum().astype("int64")
+
+        # WARNING jika saldo minus
+    if len(petty_cash) > 0 and petty_cash["SALDO_NUM"].iloc[-1] < 0:
+        st.error("⚠️ Saldo petty cash minus! Periksa transaksi OUT berlebih")
 
     # =========================
     # FILTER (TANPA PV)
@@ -262,10 +311,10 @@ with tabs[0]:
             df = df[hay.str.contains(kw, na=False)]
 
     # =========================
-    # SORTING UNTUK TAMPILAN
+    # SORTING SESUAI SPREADSHEET (ASCENDING)
     # =========================
-    df = df.sort_values("DATE", ascending=False).reset_index(drop=True)
-    df.insert(0, "NO", range(1, len(df) + 1))
+    df = df.sort_values("ROW_ID") #TAMPILAN SESUAI URUTAN DI SPREADSHEET
+    #KALAU MAU DARI ATAS KE BAWAH ATAU SAMA DENGAN KEBALIKANNYA PAKAI CODE INI df = df.sort_values("ROW_ID", ascending=False).reset_index(drop=True)
 
     # =========================
     # KPI (FOKUS CASHFLOW)
@@ -279,63 +328,76 @@ with tabs[0]:
     k1, k2, k3, k4, k5 = st.columns([1.2, 1, 1, 1, 1])
 
     with k1:
-        kpi_card("💳 Sisa Saldo Akhir", format_rp(saldo_akhir_all))
+        kpi_card("Saldo Akhir (seluruh data)", format_rp(saldo_akhir_all))
 
     with k2:
-        kpi_card("💰 Total IN", format_rp(total_in))
+        kpi_card("Total IN (filter)", format_rp(total_in))
 
     with k3:
-        kpi_card("💸 Total OUT", format_rp(total_out))
+        kpi_card("Total OUT (filter)", format_rp(total_out))
 
     with k4:
-        kpi_card("⚖️ Balace", format_rp(net_range))
+        kpi_card("Net (filter)", format_rp(net_range))
 
     with k5:
-        kpi_card("🛍️ Total Transaksi", total_transaksi)
+        kpi_card("Total Transaksi", total_transaksi)
 
     # =========================
     # TABEL UTAMA (RUPIAH)
     # =========================
     st.subheader("Detail Transaksi")
 
-    show_cols = [c for c in ["DATE","KETERANGAN","DESKRIPSI","PROJECT/PJ","TIPE"] if c in df.columns]
+    show_cols = [c for c in ["DATE","KETERANGAN","TIPE","DESKRIPSI","PROJECT/PJ"] if c in df.columns]
 
     if "KET.PV" in df.columns:
         df["KET.PV"] = df["KET.PV"].fillna("").astype(str).str.upper().str.strip()
-        show_cols.insert(4, "KET.PV")  # setelah PROJECT/PJ (opsional)
+        show_cols.insert(5, "KET.PV")
 
     view = df[show_cols + ["JUMLAH_NUM", "SALDO_NUM"]].copy()
+
+    # =========================
+    # FORMAT RUPIAH
+    # =========================
+    view["JUMLAH"] = view["JUMLAH_NUM"].apply(format_rp)
+    view["SALDO"] = view["SALDO_NUM"].apply(format_rp)
+
+    # Drop kolom numeric biar bersih
+    view = view.drop(columns=["JUMLAH_NUM", "SALDO_NUM"])
+
     # Format DATE agar hanya tampil tanggal saja
     if "DATE" in view.columns:
         view["DATE"] = pd.to_datetime(view["DATE"]).dt.strftime("%d/%m/%Y")
 
-    def pv_style(val: str):
-        v = str(val).upper().strip()
+    # =========================
+    # APPLY PILL STYLE (NEW)
+    # =========================
+    styler = view.style
 
-        if v == "SUDAH BUAT PV":
-        # Hijau lembut, teks hitam
-            return (
-            "background-color: #C8F7C5;"
-            "color: #000000;"
-            "font-weight: 600;"
-        )
+    if "TIPE" in view.columns:
+        styler = styler.applymap(lambda v: pill_style(v, "TIPE"), subset=["TIPE"])
 
-        if v == "BELUM BUAT PV":
-        # Merah lembut, teks putih
-            return (
-            "background-color: #F8C6C6;"
-            "color: #000000;"
-            "font-weight: 600;"
-        )
-
-        return ""
+    if "KETERANGAN" in view.columns:
+        styler = styler.applymap(lambda v: pill_style(v, "KETERANGAN"), subset=["KETERANGAN"])
 
     if "KET.PV" in view.columns:
-        st.dataframe(view.style.applymap(pv_style, subset=["KET.PV"]), width="stretch")
-    else:
-        st.dataframe(view, width="stretch")
+        styler = styler.applymap(lambda v: pill_style(v, "KET.PV"), subset=["KET.PV"])
 
+    # 🔥 TAMBAHAN WIDTH & ALIGN TIPE
+    if "TIPE" in view.columns:
+        styler = styler.set_properties(subset=["TIPE"], **{
+            "width": "80px",
+            "text-align": "center"
+        })
 
+    # =========================
+    # DISPLAY TABLE
+    # =========================
+    st.dataframe(
+        styler,
+        height=300,
+        use_container_width=True,
+        hide_index=True
+    )
     # ==========================================================
     # TAB 2: PURCHASE REQUEST
     # ==========================================================
@@ -592,105 +654,105 @@ with tabs[3]:
 # ==========================================================
 # TAB 5: ANALYSIS
 # ==========================================================
-with tabs[4]:
-    st.header("📊 Cashflow Analysis")
+    with tabs[4]:
+        st.header("📊 Cashflow Analysis")
 
-    df_cash = petty_cash.copy()
+        df_cash = petty_cash.copy()
 
-    if df_cash.empty:
-        st.error("Data Cashflow kosong.")
-        st.stop()
+        if df_cash.empty:
+            st.error("Data Cashflow kosong.")
+            st.stop()
 
         # =========================
         # Validasi Kolom
         # =========================
-    required_cols = ["JUMLAH", "TIPE", "DATE"]
-    missing = [c for c in required_cols if c not in df_cash.columns]
+        required_cols = ["JUMLAH", "TIPE", "DATE"]
+        missing = [c for c in required_cols if c not in df_cash.columns]
 
-    if missing:
-        st.error(f"Kolom tidak ditemukan: {missing}")
-        st.stop()
+        if missing:
+            st.error(f"Kolom tidak ditemukan: {missing}")
+            st.stop()
 
         # =========================
         # Cleaning Data (ANTI BEDA ANGKA)
         # =========================
-    df_cash["TIPE"] = df_cash["TIPE"].astype(str).str.upper().str.strip()
-    df_cash["JUMLAH_NUM"] = parse_rupiah(df_cash["JUMLAH"]).astype("int64")
-    df_cash["DATE"] = pd.to_datetime(df_cash["DATE"], errors="coerce")
+        df_cash["TIPE"] = df_cash["TIPE"].astype(str).str.upper().str.strip()
+        df_cash["JUMLAH_NUM"] = parse_rupiah(df_cash["JUMLAH"]).astype("int64")
+        df_cash["DATE"] = pd.to_datetime(df_cash["DATE"], errors="coerce")
 
         # =========================
         # KPI
         # =========================
-    total_in = df_cash.loc[df_cash["TIPE"] == "IN", "JUMLAH_NUM"].sum()
-    total_out = df_cash.loc[df_cash["TIPE"] == "OUT", "JUMLAH_NUM"].sum()
-    net_total = total_in - total_out
+        total_in = df_cash.loc[df_cash["TIPE"] == "IN", "JUMLAH_NUM"].sum()
+        total_out = df_cash.loc[df_cash["TIPE"] == "OUT", "JUMLAH_NUM"].sum()
+        net_total = total_in - total_out
 
-    ratio = (total_in / total_out) if total_out > 0 else 0
-    ratio_percent = ratio * 100
+        ratio = (total_in / total_out) if total_out > 0 else 0
+        ratio_percent = ratio * 100
 
         # Persentase pengeluaran terhadap pemasukan
-    out_percent = (total_out / total_in * 100) if total_in > 0 else 0
+        out_percent = (total_out / total_in * 100) if total_in > 0 else 0
 
-    col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4 = st.columns(4)
 
-    with col1:
+        with col1:
             kpi_card("💰 Total IN", format_rp(total_in))
 
-    with col2:
+        with col2:
             kpi_card("💸 Total OUT", format_rp(total_out))
             delta=f"{out_percent:.1f}% dari IN"
 
-    with col3:
+        with col3:
             kpi_card("📊 Net Cashflow", format_rp(net_total))
             delta=format_rp(net_total),
             delta_color="normal" if net_total >= 0 else "inverse"
 
-    with col4:
+        with col4:
             kpi_card("⚖️ Rasio IN / OUT", f"{ratio:.2f}x")
             delta=f"{ratio_percent:.0f}%"
             
         # Status kesehatan
-    if net_total > 0:
-        st.success("🟢 Cashflow Sehat (Surplus)")
-    elif net_total < 0:
-        st.error("🔴 Cashflow Defisit")
-    else:
-        st.warning("🟡 Break Even")
+        if net_total > 0:
+            st.success("🟢 Cashflow Sehat (Surplus)")
+        elif net_total < 0:
+            st.error("🔴 Cashflow Defisit")
+        else:
+            st.warning("🟡 Break Even")
 
         # =========================
         # Project Paling Boros
         # =========================
-    if "PROJECT/PJ" in df_cash.columns:
-        st.subheader("📊 Kontributor Pengeluaran Terbesar")
+        if "PROJECT/PJ" in df_cash.columns:
+            st.subheader("📊 Kontributor Pengeluaran Terbesar")
 
-        df_out = df_cash[df_cash["TIPE"] == "OUT"]
+            df_out = df_cash[df_cash["TIPE"] == "OUT"]
 
-        project_spending = (
-            df_out.groupby("PROJECT/PJ")["JUMLAH_NUM"]
-            .sum()
-            .reset_index()
-            .sort_values("JUMLAH_NUM", ascending=False)
+            project_spending = (
+                df_out.groupby("PROJECT/PJ")["JUMLAH_NUM"]
+                .sum()
+                .reset_index()
+                .sort_values("JUMLAH_NUM", ascending=False)
             )
 
-        project_spending["TOTAL"] = project_spending["JUMLAH_NUM"].apply(format_rp)
+            project_spending["TOTAL"] = project_spending["JUMLAH_NUM"].apply(format_rp)
 
-        st.dataframe(
-            project_spending[["PROJECT/PJ", "TOTAL"]],
-            use_container_width=True
+            st.dataframe(
+                project_spending[["PROJECT/PJ", "TOTAL"]],
+                use_container_width=True
             )
 
             # Ambil Top 5
-        top_projects = project_spending.head(5).copy()
+            top_projects = project_spending.head(5).copy()
 
             # Tambah kolom ranking untuk warna
-        top_projects["RANK"] = range(1, len(top_projects) + 1)
+            top_projects["RANK"] = range(1, len(top_projects) + 1)
 
             # Warna khusus top 1
-        top_projects["COLOR"] = top_projects["RANK"].apply(
-            lambda x: "Top 1" if x == 1 else "Others"
+            top_projects["COLOR"] = top_projects["RANK"].apply(
+                lambda x: "Top 1" if x == 1 else "Others"
             )
 
-        fig = px.bar(
+            fig = px.bar(
                 top_projects,
                 x="JUMLAH_NUM",
                 y="PROJECT/PJ",
@@ -703,7 +765,7 @@ with tabs[4]:
                 text="JUMLAH_NUM"
             )
 
-        fig.update_layout(
+            fig.update_layout(
                 yaxis=dict(categoryorder="total ascending"),
                 xaxis_title="Total Pengeluaran",
                 yaxis_title="Project / PIC",
@@ -711,29 +773,29 @@ with tabs[4]:
                 height=400
             )
 
-        fig.update_traces(
+            fig.update_traces(
                 texttemplate='%{text:,}',
                 textposition='outside'
             )
 
-        st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True)
 
             # Insight otomatis
-        top_name = top_projects.iloc[0]["PROJECT/PJ"]
-        top_value = top_projects.iloc[0]["JUMLAH_NUM"]
-        total_spending = df_out["JUMLAH_NUM"].sum()
+            top_name = top_projects.iloc[0]["PROJECT/PJ"]
+            top_value = top_projects.iloc[0]["JUMLAH_NUM"]
+            total_spending = df_out["JUMLAH_NUM"].sum()
 
-        percentage = (top_value / total_spending) * 100
+            percentage = (top_value / total_spending) * 100
 
-        st.info(
-            f"""
-            📌 **Insight:**
+            st.info(
+                f"""
+                📌 **Insight:**
                 
-            Pengeluaran terbesar berasal dari **{top_name}** 
-            dengan total sebesar **{format_rp(top_value)}**, 
-            berkontribusi sekitar **{percentage:.1f}%** 
-            dari total pengeluaran keseluruhan.
-            """
+                Pengeluaran terbesar berasal dari **{top_name}** 
+                dengan total sebesar **{format_rp(top_value)}**, 
+                berkontribusi sekitar **{percentage:.1f}%** 
+                dari total pengeluaran keseluruhan.
+                """
             )
 
         # =========================

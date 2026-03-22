@@ -193,12 +193,55 @@ def load_data():
 
 petty_cash, pr_data, stock_data, tracking_data = load_data()
 
+
 # =========================
 # NAVIGATION: TABS
 # =========================
 tab_labels = ["💰 Petty Cash", "🛒 Purchase Request", "📦 Cutting Stock", "🔎 Tracking Harga & Supplier", "📊 Analysis"]
 st.caption(f"Total opsi menu: {len(tab_labels)}")
 tabs = st.tabs(tab_labels)
+
+# =========================
+# HELPER FUNCTIONS
+# =========================
+
+def pill_style(val, col):
+    v = str(val).upper().strip()
+
+    base = (
+        "border-radius: 12px;"
+        "padding: 4px 10px;"
+        "text-align: center;"
+        "display: inline-block;"
+        "font-weight: 600;"
+    )
+
+    # TIPE
+    if col == "TIPE":
+        if v == "IN":
+            return base + "background-color:#C8F7C5; color:#000;"
+        if v == "OUT":
+            return base + "background-color:#F8C6C6; color:#000;"
+
+    # KETERANGAN
+    if col == "KETERANGAN":
+        if "PEMBELIAN" in v:
+            return base + "background-color:#DFF5E1; color:#1B5E20;"
+        if "PEMBAYARAN" in v:
+            return base + "background-color:#E8F5E9; color:#1B5E20;"
+        if "MASUK" in v:
+            return base + "background-color:#FFF3CD; color:#856404;"
+        if "DANA" in v:
+            return base + "background-color:#D6EAF8; color:#154360;"
+
+    # PV
+    if col == "KET.PV":
+        if "BELUM" in v:
+            return base + "background-color:#F8C6C6; color:#000;"
+        if "SUDAH" in v:
+            return base + "background-color:#C8F7C5; color:#000;"
+
+    return ""
 
 # ==========================================================
 # TAB 1: PETTY CASH (FOCUS CASHFLOW, TANPA PV)
@@ -223,8 +266,14 @@ with tabs[0]:
         np.where(petty_cash["TIPE"].eq("OUT"), -petty_cash["JUMLAH_NUM"], 0)
     ).astype("int64")
 
-    petty_cash = petty_cash.sort_values("DATE")
+    petty_cash = petty_cash.reset_index(drop=True)
+    petty_cash["ROW_ID"] = petty_cash.index
+
     petty_cash["SALDO_NUM"] = petty_cash["JUMLAH_BERSIH"].cumsum().astype("int64")
+
+        # WARNING jika saldo minus
+    if len(petty_cash) > 0 and petty_cash["SALDO_NUM"].iloc[-1] < 0:
+        st.error("⚠️ Saldo petty cash minus! Periksa transaksi OUT berlebih")
 
     # =========================
     # FILTER (TANPA PV)
@@ -262,10 +311,10 @@ with tabs[0]:
             df = df[hay.str.contains(kw, na=False)]
 
     # =========================
-    # SORTING UNTUK TAMPILAN
+    # SORTING SESUAI SPREADSHEET (ASCENDING)
     # =========================
-    df = df.sort_values("DATE", ascending=False).reset_index(drop=True)
-    df.insert(0, "NO", range(1, len(df) + 1))
+    df = df.sort_values("ROW_ID") #TAMPILAN SESUAI URUTAN DI SPREADSHEET
+    #KALAU MAU DARI ATAS KE BAWAH ATAU SAMA DENGAN KEBALIKANNYA PAKAI CODE INI df = df.sort_values("ROW_ID", ascending=False).reset_index(drop=True)
 
     # =========================
     # KPI (FOKUS CASHFLOW)
@@ -298,44 +347,57 @@ with tabs[0]:
     # =========================
     st.subheader("Detail Transaksi")
 
-    show_cols = [c for c in ["DATE","KETERANGAN","DESKRIPSI","PROJECT/PJ","TIPE"] if c in df.columns]
+    show_cols = [c for c in ["DATE","KETERANGAN","TIPE","DESKRIPSI","PROJECT/PJ"] if c in df.columns]
 
     if "KET.PV" in df.columns:
         df["KET.PV"] = df["KET.PV"].fillna("").astype(str).str.upper().str.strip()
-        show_cols.insert(4, "KET.PV")  # setelah PROJECT/PJ (opsional)
+        show_cols.insert(5, "KET.PV")
 
     view = df[show_cols + ["JUMLAH_NUM", "SALDO_NUM"]].copy()
+
+    # =========================
+    # FORMAT RUPIAH
+    # =========================
+    view["JUMLAH"] = view["JUMLAH_NUM"].apply(format_rp)
+    view["SALDO"] = view["SALDO_NUM"].apply(format_rp)
+
+    # Drop kolom numeric biar bersih
+    view = view.drop(columns=["JUMLAH_NUM", "SALDO_NUM"])
+
     # Format DATE agar hanya tampil tanggal saja
     if "DATE" in view.columns:
         view["DATE"] = pd.to_datetime(view["DATE"]).dt.strftime("%d/%m/%Y")
 
-    def pv_style(val: str):
-        v = str(val).upper().strip()
+    # =========================
+    # APPLY PILL STYLE (NEW)
+    # =========================
+    styler = view.style
 
-        if v == "SUDAH BUAT PV":
-        # Hijau lembut, teks hitam
-            return (
-            "background-color: #C8F7C5;"
-            "color: #000000;"
-            "font-weight: 600;"
-        )
+    if "TIPE" in view.columns:
+        styler = styler.applymap(lambda v: pill_style(v, "TIPE"), subset=["TIPE"])
 
-        if v == "BELUM BUAT PV":
-        # Merah lembut, teks putih
-            return (
-            "background-color: #F8C6C6;"
-            "color: #000000;"
-            "font-weight: 600;"
-        )
-
-        return ""
+    if "KETERANGAN" in view.columns:
+        styler = styler.applymap(lambda v: pill_style(v, "KETERANGAN"), subset=["KETERANGAN"])
 
     if "KET.PV" in view.columns:
-        st.dataframe(view.style.applymap(pv_style, subset=["KET.PV"]), width="stretch")
-    else:
-        st.dataframe(view, width="stretch")
+        styler = styler.applymap(lambda v: pill_style(v, "KET.PV"), subset=["KET.PV"])
 
+    # 🔥 TAMBAHAN WIDTH & ALIGN TIPE
+    if "TIPE" in view.columns:
+        styler = styler.set_properties(subset=["TIPE"], **{
+            "width": "80px",
+            "text-align": "center"
+        })
 
+    # =========================
+    # DISPLAY TABLE
+    # =========================
+    st.dataframe(
+        styler,
+        height=300,
+        use_container_width=True,
+        hide_index=True
+    )
     # ==========================================================
     # TAB 2: PURCHASE REQUEST
     # ==========================================================
