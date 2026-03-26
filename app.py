@@ -256,7 +256,7 @@ with tabs[0]:
         st.write("Kolom tersedia:", petty_cash.columns.tolist())
         st.stop()
 
-    petty_cash["DATE"] = pd.to_datetime(petty_cash["DATE"], format='%d/%m/%Y', errors="coerce")
+    petty_cash["DATE"] = pd.to_datetime(petty_cash["DATE"], dayfirst=True, errors="coerce")
     petty_cash["TIPE"] = petty_cash["TIPE"].astype(str).str.upper().str.strip()
     petty_cash["JUMLAH_NUM"] = parse_rupiah(petty_cash["JUMLAH"]).astype("int64")
 
