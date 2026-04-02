@@ -377,13 +377,13 @@ with tabs[0]:
     styler = view.style
 
     if "TIPE" in view.columns:
-        styler = styler.applymap(lambda v: pill_style(v, "TIPE"), subset=["TIPE"])
+        styler = styler.map(lambda v: pill_style(v, "TIPE"), subset=["TIPE"])
 
     if "KETERANGAN" in view.columns:
-        styler = styler.applymap(lambda v: pill_style(v, "KETERANGAN"), subset=["KETERANGAN"])
+        styler = styler.map(lambda v: pill_style(v, "KETERANGAN"), subset=["KETERANGAN"])
 
     if "KET.PV" in view.columns:
-        styler = styler.applymap(lambda v: pill_style(v, "KET.PV"), subset=["KET.PV"])
+        styler = styler.map(lambda v: pill_style(v, "KET.PV"), subset=["KET.PV"])
 
     # 🔥 TAMBAHAN WIDTH & ALIGN TIPE
     if "TIPE" in view.columns:
