@@ -206,6 +206,9 @@ tabs = st.tabs(tab_labels)
 # =========================
 
 def pill_style(val, col):
+    # Pastikan nilai adalah string dan tangani kasus seperti NaN atau nilai kosong
+    if pd.isna(val):
+        return ""  # mengembalikan gaya kosong untuk nilai NaN
     v = str(val).upper().strip()
 
     base = (
@@ -241,7 +244,7 @@ def pill_style(val, col):
         if "SUDAH" in v:
             return base + "background-color:#C8F7C5; color:#000;"
 
-    return ""
+    return ""  # kasus default jika nilai tidak dikenali
 
 # ==========================================================
 # TAB 1: PETTY CASH (FOCUS CASHFLOW, TANPA PV)
