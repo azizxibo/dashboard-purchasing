@@ -107,7 +107,7 @@ st.set_page_config(page_title="Dashboard Purchasing & Inventory", layout="wide")
 # INIT SESSION
 if "auth_ok" not in st.session_state:
     st.session_state.auth_ok = False
-st.title("📊 Dashboard Purchasing & Inventory")
+st.title("📊 Dashboard Monitoring")
 st.caption("Monitoring Petty Cash, Purchase Request, dan Cutting Stock")
 st.markdown("""
 <style>
